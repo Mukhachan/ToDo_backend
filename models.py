@@ -24,13 +24,15 @@ class Token(BaseModel):
 
 # Базовая модель задачи
 class TaskBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
+    title: str = Field(..., min_length=0, max_length=100)
+    description: Optional[str] = Field(None, min_length=0,  max_length=500)
     status: bool = False  # False - не выполнено, True - выполнено
 
 # Модель для создания задачи
 class TaskCreate(TaskBase):
-    pass
+    title: str
+    description: str
+    status: bool
 
 # Модель для обновления задачи (частичная)
 class TaskUpdate(BaseModel):
@@ -44,3 +46,6 @@ class Task(TaskBase):
     id: UUID
     owner_id: UUID
     created_at: datetime
+
+class Sorting(BaseModel):
+    sorting: str

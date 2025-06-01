@@ -10,6 +10,7 @@ from datetime import timedelta, datetime
 
 from config import *
 from models import (
+    Sorting,
     UserCreate,
     User,
     UserInDB,
@@ -36,7 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-# Создаём таблиц
+# Создаём таблицы
 db_connect().init_tables()
 
 
@@ -106,6 +107,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.post("/tasks/", response_model=Task)
 def create_task(task: TaskCreate, current_user: UserInDB = Depends(get_current_user)):
+    pprint(task)
     task_id = uuid4()
     created_at = datetime.now()
     conn = db_connect()
@@ -120,6 +122,7 @@ def create_task(task: TaskCreate, current_user: UserInDB = Depends(get_current_u
     return Task(
         id=task_id,
         owner_id=current_user.id,
+        num=1,
         title=task.title,
         description=task.description,
         status=task.status,
@@ -127,12 +130,12 @@ def create_task(task: TaskCreate, current_user: UserInDB = Depends(get_current_u
     )
 
 @app.get("/tasks/", response_model=List[Task])
-def read_tasks(current_user: UserInDB = Depends(get_current_user)):
+def read_tasks(sorting: str, current_user: UserInDB = Depends(get_current_user)):
+    
     conn = db_connect()
-    rows = conn.get_tasks_by_owner(current_user.id, sorting="ASC")
+    rows = conn.get_tasks_by_owner(current_user.id, sorting=sorting)
     tasks: List[Task] = []
     for i,r in enumerate(rows):
-
         tasks.append(
             Task(
                 num=i+1,
